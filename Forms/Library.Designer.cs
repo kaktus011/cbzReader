@@ -1,4 +1,4 @@
-﻿namespace cbzReader
+﻿namespace cbzReader.Forms
 {
     partial class Library
     {
@@ -28,49 +28,35 @@
         /// </summary>
         private void InitializeComponent()
         {
-            importBtn = new Button();
-            pictureBox1 = new PictureBox();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ImportBtn = new Button();
             SuspendLayout();
             // 
-            // importBtn
+            // ImportBtn
             // 
-            importBtn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            importBtn.Location = new Point(12, 12);
-            importBtn.Name = "importBtn";
-            importBtn.Size = new Size(129, 44);
-            importBtn.TabIndex = 0;
-            importBtn.Text = "Import";
-            importBtn.UseVisualStyleBackColor = true;
-            importBtn.Click += importBtn_Click;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Location = new Point(27, 76);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(100, 133);
-            pictureBox1.TabIndex = 1;
-            pictureBox1.TabStop = false;
+            ImportBtn.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            ImportBtn.Location = new Point(12, 12);
+            ImportBtn.Name = "ImportBtn";
+            ImportBtn.Size = new Size(129, 44);
+            ImportBtn.TabIndex = 0;
+            ImportBtn.Text = "Import";
+            ImportBtn.UseVisualStyleBackColor = true;
+            ImportBtn.Click += ImportBtn_Click;
             // 
             // Library
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            ClientSize = new Size(581, 401);
-            Controls.Add(pictureBox1);
-            Controls.Add(importBtn);
-            MinimumSize = new Size(597, 440);
+            AutoScroll = true;
+            ClientSize = new Size(589, 416);
+            Controls.Add(ImportBtn);
             Name = "Library";
             Text = "Library";
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
         private Button importBtn;
-        private PictureBox pictureBox1;
+        private Button ImportBtn;
     }
 }

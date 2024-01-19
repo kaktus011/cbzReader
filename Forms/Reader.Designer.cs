@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             picBox = new PictureBox();
-            nextBtn = new Button();
-            prevBtn = new Button();
+            NextBtn = new Button();
+            PrevBtn = new Button();
             progressBar = new ProgressBar();
             ((System.ComponentModel.ISupportInitialize)picBox).BeginInit();
             SuspendLayout();
@@ -43,25 +43,25 @@
             picBox.TabIndex = 0;
             picBox.TabStop = false;
             // 
-            // nextBtn
+            // NextBtn
             // 
-            nextBtn.Location = new Point(859, 12);
-            nextBtn.Name = "nextBtn";
-            nextBtn.Size = new Size(45, 1123);
-            nextBtn.TabIndex = 1;
-            nextBtn.Text = "next";
-            nextBtn.UseVisualStyleBackColor = true;
-            nextBtn.Click += nextBtn_Click;
+            NextBtn.Location = new Point(859, 12);
+            NextBtn.Name = "NextBtn";
+            NextBtn.Size = new Size(45, 1123);
+            NextBtn.TabIndex = 1;
+            NextBtn.Text = "next";
+            NextBtn.UseVisualStyleBackColor = true;
+            NextBtn.Click += NextBtn_Click;
             // 
-            // prevBtn
+            // PrevBtn
             // 
-            prevBtn.Location = new Point(4, 12);
-            prevBtn.Name = "prevBtn";
-            prevBtn.Size = new Size(49, 1123);
-            prevBtn.TabIndex = 2;
-            prevBtn.Text = "prev";
-            prevBtn.UseVisualStyleBackColor = true;
-            prevBtn.Click += prevBtn_Click;
+            PrevBtn.Location = new Point(4, 12);
+            PrevBtn.Name = "PrevBtn";
+            PrevBtn.Size = new Size(49, 1123);
+            PrevBtn.TabIndex = 2;
+            PrevBtn.Text = "prev";
+            PrevBtn.UseVisualStyleBackColor = true;
+            PrevBtn.Click += PrevBtn_Click;
             // 
             // progressBar
             // 
@@ -80,8 +80,8 @@
             AutoScroll = true;
             ClientSize = new Size(916, 1155);
             Controls.Add(progressBar);
-            Controls.Add(prevBtn);
-            Controls.Add(nextBtn);
+            Controls.Add(PrevBtn);
+            Controls.Add(NextBtn);
             Controls.Add(picBox);
             Name = "Reader";
             Text = "Reader";
@@ -93,8 +93,8 @@
         #endregion
 
         private PictureBox picBox;
-        private Button nextBtn;
-        private Button prevBtn;
+        private Button NextBtn;
+        private Button PrevBtn;
         private ProgressBar progressBar;
     }
 }

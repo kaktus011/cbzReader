@@ -2,10 +2,14 @@
 {
     internal class ComicBook
     {
-        public string Name { get; set; } = "";
+        internal string Title { get; set; }
 
-        public string Location { get; set; } = "";
+        internal string Location { get; set; }
 
-        public string Thumbnail { get; set; } = "";
+        internal Image Cover { get; set; }
+
+        internal int Pages { get; set; }
+
+        internal readonly List<Image> Panels = [];
     }
 }

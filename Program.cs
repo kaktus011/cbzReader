@@ -1,3 +1,5 @@
+using cbzReader.Forms;
+
 namespace cbzReader
 {
     internal static class Program
