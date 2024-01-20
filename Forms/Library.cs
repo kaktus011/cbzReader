@@ -7,7 +7,9 @@ namespace cbzReader.Forms
     //TODO
     //adding big files takes a while
     //restore from library directory
-    //make everything dark mode (easier on the eyes)
+    //make everything dark mode (easier on the eyes) multiple
+    //progress bar for importing files
+    //option for next page going left or next page going right
 
     //BUG(s)
     //adding the same file breaks everything
@@ -47,7 +49,12 @@ namespace cbzReader.Forms
                     Title = Path.GetFileName(path).Substring(0, Path.GetFileName(path).IndexOf('.'))
                 };
 
-                Import(comic);
+                if (_books.FirstOrDefault(book => book.Title == comic.Title) == null) 
+                    Import(comic);
+                else
+                {
+                    MessageBox.Show("Error: File already imported.");
+                }
             }
         }
 
