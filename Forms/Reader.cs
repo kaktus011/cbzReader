@@ -1,29 +1,26 @@
 ﻿namespace cbzReader.Forms
 {
-
     public partial class Reader : Form
     {
         private readonly ComicBook _comic;
 
-        private int _pageIndx = -1;
+        private int _pageIndx;
 
         private readonly int _lastPage;
 
         internal Reader(ComicBook comic)
         {
-            InitializeComponent();
             _comic = comic;
-            this.Text = _comic.Title;
-            _lastPage = comic.Pages;
+            _lastPage = _comic.Pages;
+            InitializeComponent();
         }
 
         private void Reader_Load(object sender, EventArgs e)
         {
+            Text = _comic.Title;
             picBox.Width = Library.PageWidth;
             picBox.Height = Library.PageHeight;
             picBox.Image = _comic.Panels[0];
-
-            _pageIndx++;
             progressBar.Maximum = _lastPage;
         }
 
@@ -31,7 +28,8 @@
         {
             if (_pageIndx < _lastPage)
             {
-                picBox.Image = _comic.Panels[_pageIndx++];
+                _pageIndx++;
+                picBox.Image = _comic.Panels[_pageIndx];
                 progressBar.PerformStep();
             }
         }
@@ -40,7 +38,8 @@
         {
             if (_pageIndx > 0)
             {
-                picBox.Image = _comic.Panels[_pageIndx--];
+                _pageIndx--;
+                picBox.Image = _comic.Panels[_pageIndx];
                 progressBar.Step = -1;
                 progressBar.PerformStep();
                 progressBar.Step = 1;

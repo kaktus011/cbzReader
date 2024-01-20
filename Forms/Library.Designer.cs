@@ -49,6 +49,7 @@
             AutoScroll = true;
             ClientSize = new Size(589, 416);
             Controls.Add(ImportBtn);
+            DoubleBuffered = true;
             Name = "Library";
             Text = "Library";
             ResumeLayout(false);

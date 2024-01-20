@@ -6,23 +6,24 @@ namespace cbzReader.Forms
 {
     //TODO
     //adding big files takes a while
+    //restore from library directory
+    //make everything dark mode (easier on the eyes)
 
     //BUG(s)
     //adding the same file breaks everything
-    //can't scroll down in when there are more than 2 rows 
 
 
     public partial class Library : Form
     {
-        private readonly List<ComicBook> books = [];
+        private readonly List<ComicBook> _books = [];
 
         private readonly string _comicExtractLocation =
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\CBZ Viewer\comics";
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
 
         internal const int PageWidth = 794;
         internal const int PageHeight = 1123;
-        private const int _coverWidth = 105;
-        private const int _coverHeight = 147;
+        private const int CoverWidth = 105;
+        private const int CoverHeight = 147;
 
         private int _coverPosX = 12;
         private int _coverPosY = 72;
@@ -43,7 +44,7 @@ namespace cbzReader.Forms
                 var comic = new ComicBook
                 {
                     Location = path,
-                    Title = Path.GetFileName(path)
+                    Title = Path.GetFileName(path).Substring(0, Path.GetFileName(path).IndexOf('.'))
                 };
 
                 Import(comic);
@@ -54,15 +55,18 @@ namespace cbzReader.Forms
         {
             var imgPaths = ExtractComic(comic);
             comic.Pages = imgPaths.Length;
-            comic.Cover = ResizeImage(Image.FromFile(imgPaths[0]), 105, 147);
+            var tmp = Image.FromFile(imgPaths[0]);
+            comic.Cover = ResizeImage(tmp, 105, 147);
 
             var newPicBox = new PictureBox
             {
                 Size = new Size(105, 147),
                 Image = comic.Cover,
                 Location = new Point(_coverPosX, _coverPosY),
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                Text = comic.Title,
             };
+            newPicBox.DoubleClick += (sender, e) => { Read(newPicBox.Text); };
 
             Controls.Add(newPicBox);
             CalculateNextCoverPos();
@@ -73,23 +77,23 @@ namespace cbzReader.Forms
                 comic.Panels.Add(ResizeImage(img, PageWidth, PageHeight));
             }
 
-            books.Add(comic);
+            _books.Add(comic);
         }
 
         private void CalculateNextCoverPos()
         {
             //this form's width
             var formWidth = Width;
-            var coverMargin = 10;
+            const int CoverMargin = 10;
 
-            if (_coverPosX + _coverWidth + 30 >= formWidth)
+            if (_coverPosX + CoverWidth + 30 >= formWidth)
             {
-                _coverPosY += _coverHeight + coverMargin;
+                _coverPosY += CoverHeight + CoverMargin;
                 _coverPosX = 12;
             }
             else
             {
-                _coverPosX += _coverWidth + coverMargin;
+                _coverPosX += CoverWidth + CoverMargin;
             }
         }
 
@@ -109,14 +113,14 @@ namespace cbzReader.Forms
 
             using var wrapMode = new ImageAttributes();
             wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-            graphics.DrawImage(image, destRect, 0, 0, image.Width,image.Height, GraphicsUnit.Pixel, wrapMode);
+            graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
 
             return destImage;
         }
 
         private string[] ExtractComic(ComicBook comic)
         {
-            var dir = _comicExtractLocation + comic.Title;
+            var dir = _comicExtractLocation + "\\" + comic.Title;
 
             //extract to dir
             using ZipArchive archive = ZipFile.OpenRead(comic.Location);
@@ -129,9 +133,10 @@ namespace cbzReader.Forms
             return result;
         }
 
-        private void Read(ComicBook book)
+        private void Read(string comicTitle)
         {
-            Reader reader = new Reader(book);
+            var comic = _books.FirstOrDefault(book => book.Title == comicTitle);
+            var reader = new Reader(comic);
             reader.Show();
         }
     }
