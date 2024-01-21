@@ -1,7 +1,5 @@
-using System;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using System.IO;
 using System.IO.Compression;
 
 namespace cbzReader.Forms
@@ -9,8 +7,7 @@ namespace cbzReader.Forms
     //TODO
     //option for next page going left or next page going right
     //make everything dark mode (easier on the eyes) multiple
-    //be able to delete a file
-    //TODO in ImportBtn_Click() check if file is already in _comicExtractLocation at the start
+    //reorder picboxes after deleting a file
 
     //BUG(s)
     //adding big files takes a while
@@ -19,6 +16,7 @@ namespace cbzReader.Forms
     public partial class Library : Form
     {
         private readonly List<ComicBook> _books = [];
+        private readonly List<PictureBox> _picBoxes = [];
 
         private const string ComicExtractLocation = "C:\\Users\\PiwKi\\Desktop" + @"\cbzViewerLib";
 
@@ -28,9 +26,11 @@ namespace cbzReader.Forms
         internal const int PageHeight = 1123;
         private const int CoverWidth = 105;
         private const int CoverHeight = 147;
+        private const int InitX = 12;
+        private const int InitY = 72;
 
-        private int _coverPosX = 12;
-        private int _coverPosY = 72;
+        private int _coverPosX = InitX;
+        private int _coverPosY = InitY;
 
         public Library()
         {
@@ -72,6 +72,44 @@ namespace cbzReader.Forms
             RestoreBtn.Visible = false;
         }
 
+        private void DeleteBtn_Click(object sender, EventArgs e)
+        {
+            var deleteForm = new DeleteComic(_books);
+            deleteForm.ShowDialog();
+
+
+            var path = deleteForm.SelectedPath;
+            var book = deleteForm.Book;
+
+            if (path == null || book == null)
+                return;
+
+            var picBox = _picBoxes.First(item => item.Tag == path);
+            var dir = new DirectoryInfo(Path.GetDirectoryName(path));
+
+            _picBoxes.Remove(picBox);
+            _books.Remove(book);
+            picBox.Dispose();
+            DeleteDirectory(dir);
+            ReorderLibAfterDeleting();
+            Refresh();
+        }
+
+        private void DeleteDirectory(DirectoryInfo directory)
+        {
+            foreach (var file in directory.GetFiles())
+            {
+                file.Delete();
+            }
+
+            foreach (var subDirectory in directory.GetDirectories())
+            {
+                DeleteDirectory(subDirectory);
+            }
+
+            directory.Delete();
+        }
+
         private bool CheckForFileInLib(string path)
         {
             var tmpTitle = Path.GetFileNameWithoutExtension(path);
@@ -92,17 +130,18 @@ namespace cbzReader.Forms
             Refresh();
             comic.Pages = imgPaths.Length;
             var tmp = Image.FromFile(imgPaths[0]);
-            comic.Cover = ResizeImage(tmp, 105, 147);
 
             var newPicBox = new PictureBox
             {
                 Size = new Size(105, 147),
-                Image = comic.Cover,
+                Image = ResizeImage(tmp, 105, 147),
                 Location = new Point(_coverPosX, _coverPosY),
                 BorderStyle = BorderStyle.FixedSingle,
                 Text = comic.Title,
+                Tag = (string)comic.Location
             };
-            newPicBox.DoubleClick += (sender, e) => { Read(newPicBox.Text); };
+            newPicBox.MouseDoubleClick += (sender, e) => { Read(newPicBox.Text); };
+            _picBoxes.Add(newPicBox);
 
             Controls.Add(newPicBox);
             CalculateNextCoverPos();
@@ -118,6 +157,7 @@ namespace cbzReader.Forms
 
             importingLbl.Visible = false;
             importProgBar.Visible = false;
+            tmp.Dispose();
         }
 
         private void ImportOnOpening()
@@ -144,7 +184,6 @@ namespace cbzReader.Forms
                 {
                     Title = tmpTitle.Substring(1),
                     Location = fPath + tmpTitle,
-                    Cover = ResizeImage(Image.FromFile(imgPaths[0]), 105, 147),
                     Pages = imgPaths.Length,
                 };
 
@@ -152,23 +191,28 @@ namespace cbzReader.Forms
                 {
                     var img = Image.FromFile(path);
                     newComic.Panels.Add(ResizeImage(img, PageWidth, PageHeight));
+                    img.Dispose();
                 }
 
+                var tmp = Image.FromFile(imgPaths[0]);
                 var newPicBox = new PictureBox
                 {
                     Size = new Size(105, 147),
-                    Image = newComic.Cover,
+                    Image = ResizeImage(tmp, 105, 147),
                     Location = new Point(_coverPosX, _coverPosY),
                     BorderStyle = BorderStyle.FixedSingle,
                     Text = newComic.Title,
+                    Tag = (string)newComic.Location
                 };
-                newPicBox.DoubleClick += (sender, e) => { Read(newPicBox.Text); };
+                newPicBox.MouseDoubleClick += (sender, e) => { Read(newPicBox.Text); };
+                _picBoxes.Add(newPicBox);
+                
                 Controls.Add(newPicBox);
-
                 importProgBar.PerformStep();
                 CalculateNextCoverPos();
 
                 _books.Add(newComic);
+                tmp.Dispose();
                 Refresh();
             }
 
@@ -192,6 +236,23 @@ namespace cbzReader.Forms
             {
                 _coverPosX += CoverWidth + CoverMargin;
             }
+        }
+
+        private void ReorderLibAfterDeleting()
+        {
+            _coverPosX = InitX;
+            _coverPosY = InitY;
+
+            foreach (var picBox in _picBoxes)
+                Controls.Remove(picBox);
+
+            foreach (var picBox in _picBoxes)
+            {
+                picBox.Location = new Point(_coverPosX, _coverPosY);
+                CalculateNextCoverPos();
+                Controls.Add(picBox);
+            }
+                
         }
 
         private Bitmap ResizeImage(Image image, int width, int height)
