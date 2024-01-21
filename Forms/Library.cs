@@ -4,11 +4,6 @@ using System.IO.Compression;
 
 namespace cbzReader.Forms
 {
-    //TODO
-    //option for next page going left or next page going right
-    //make everything dark mode (easier on the eyes) multiple
-    //reorder picboxes after deleting a file
-
     //BUG(s)
     //adding big files takes a while
 
@@ -18,9 +13,7 @@ namespace cbzReader.Forms
         private readonly List<ComicBook> _books = [];
         private readonly List<PictureBox> _picBoxes = [];
 
-        private const string ComicExtractLocation = "C:\\Users\\PiwKi\\Desktop" + @"\cbzViewerLib";
-
-        //Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
+        private readonly string _comicExtractLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
 
         internal const int PageWidth = 794;
         internal const int PageHeight = 1123;
@@ -114,7 +107,7 @@ namespace cbzReader.Forms
         {
             var tmpTitle = Path.GetFileNameWithoutExtension(path);
 
-            var folderPath = Path.Combine(ComicExtractLocation, tmpTitle);
+            var folderPath = Path.Combine(_comicExtractLocation, tmpTitle);
 
             return Directory.Exists(folderPath);
         }
@@ -162,7 +155,7 @@ namespace cbzReader.Forms
 
         private void ImportOnOpening()
         {
-            if (!Directory.Exists(ComicExtractLocation))
+            if (!Directory.Exists(_comicExtractLocation))
                 return;
 
             importingLbl.Visible = true;
@@ -170,7 +163,7 @@ namespace cbzReader.Forms
             importProgBar.Visible = true;
             Refresh();
 
-            var folderPaths = Directory.EnumerateDirectories(ComicExtractLocation).ToArray();
+            var folderPaths = Directory.EnumerateDirectories(_comicExtractLocation).ToArray();
             importProgBar.Maximum = folderPaths.Length;
             importProgBar.Step = 1;
 
@@ -278,7 +271,7 @@ namespace cbzReader.Forms
 
         private string[] ExtractComic(ComicBook comic)
         {
-            var dir = ComicExtractLocation + "\\" + comic.Title;
+            var dir = _comicExtractLocation + "\\" + comic.Title;
 
             //extract to dir
             using ZipArchive archive = ZipFile.OpenRead(comic.Location);
