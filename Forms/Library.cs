@@ -20,7 +20,8 @@ namespace cbzReader.Forms
     {
         private readonly List<ComicBook> _books = [];
 
-        private readonly string _comicExtractLocation = "C:\\Users\\PiwKi\\Desktop" + @"\cbzViewerLib";
+        private const string ComicExtractLocation = "C:\\Users\\PiwKi\\Desktop" + @"\cbzViewerLib";
+
         //Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
 
         internal const int PageWidth = 794;
@@ -49,6 +50,7 @@ namespace cbzReader.Forms
                     MessageBox.Show("Error: File already in library. Click 'Restore' if it isn't shown");
                     return;
                 }
+
                 var comic = new ComicBook
                 {
                     Location = path,
@@ -72,11 +74,11 @@ namespace cbzReader.Forms
 
         private bool CheckForFileInLib(string path)
         {
-            var tmpTitle = path.Substring(path.LastIndexOf("\\") + 1, Path.GetFileName(path).IndexOf('.'));
-            var folderPaths = Directory.EnumerateDirectories(_comicExtractLocation)
-                                                .Where(currPath => currPath.Substring(currPath.LastIndexOf("\\") + 1) == tmpTitle);
+            var tmpTitle = Path.GetFileNameWithoutExtension(path);
 
-            return folderPaths.Count() != 0;
+            var folderPath = Path.Combine(ComicExtractLocation, tmpTitle);
+
+            return Directory.Exists(folderPath);
         }
 
         private void Import(ComicBook comic)
@@ -120,7 +122,7 @@ namespace cbzReader.Forms
 
         private void ImportOnOpening()
         {
-            if (!Directory.Exists(_comicExtractLocation))
+            if (!Directory.Exists(ComicExtractLocation))
                 return;
 
             importingLbl.Visible = true;
@@ -128,7 +130,7 @@ namespace cbzReader.Forms
             importProgBar.Visible = true;
             Refresh();
 
-            var folderPaths = Directory.EnumerateDirectories(_comicExtractLocation).ToArray();
+            var folderPaths = Directory.EnumerateDirectories(ComicExtractLocation).ToArray();
             importProgBar.Maximum = folderPaths.Length;
             importProgBar.Step = 1;
 
@@ -215,7 +217,7 @@ namespace cbzReader.Forms
 
         private string[] ExtractComic(ComicBook comic)
         {
-            var dir = _comicExtractLocation + "\\" + comic.Title;
+            var dir = ComicExtractLocation + "\\" + comic.Title;
 
             //extract to dir
             using ZipArchive archive = ZipFile.OpenRead(comic.Location);
