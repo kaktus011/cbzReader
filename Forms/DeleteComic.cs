@@ -27,7 +27,10 @@
 
             var bookTitle = (string)listBox.SelectedItem;
             Book = _books.First(item => item.Title == bookTitle);
-            SelectedPath = Book.Location;
+
+            var directories = Directory.GetDirectories(Library.ComicExtractLocation);
+            SelectedPath = directories.First(item => Path.GetFileName(item) == bookTitle);
+
             Close();
         }
     }

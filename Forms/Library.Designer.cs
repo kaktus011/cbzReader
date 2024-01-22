@@ -33,14 +33,15 @@
             importingLbl = new Label();
             RestoreBtn = new Button();
             DeleteBtn = new Button();
+            RefreshLibBtn = new Button();
             SuspendLayout();
             // 
             // ImportBtn
             // 
             ImportBtn.Font = new Font("Segoe UI", 13F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            ImportBtn.Location = new Point(12, 13);
+            ImportBtn.Location = new Point(12, 12);
             ImportBtn.Name = "ImportBtn";
-            ImportBtn.Size = new Size(129, 46);
+            ImportBtn.Size = new Size(129, 47);
             ImportBtn.TabIndex = 0;
             ImportBtn.Text = "Import";
             ImportBtn.UseVisualStyleBackColor = true;
@@ -89,12 +90,24 @@
             DeleteBtn.UseVisualStyleBackColor = true;
             DeleteBtn.Click += DeleteBtn_Click;
             // 
+            // RefreshLibBtn
+            // 
+            RefreshLibBtn.Font = new Font("Segoe UI", 13F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            RefreshLibBtn.Location = new Point(448, 11);
+            RefreshLibBtn.Name = "RefreshLibBtn";
+            RefreshLibBtn.Size = new Size(136, 49);
+            RefreshLibBtn.TabIndex = 5;
+            RefreshLibBtn.Text = "Refresh Library";
+            RefreshLibBtn.UseVisualStyleBackColor = true;
+            RefreshLibBtn.Click += RefreshLibBtn_Click;
+            // 
             // Library
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoScroll = true;
             ClientSize = new Size(589, 416);
+            Controls.Add(RefreshLibBtn);
             Controls.Add(DeleteBtn);
             Controls.Add(RestoreBtn);
             Controls.Add(importingLbl);
@@ -115,5 +128,6 @@
         private Label importingLbl;
         private Button RestoreBtn;
         private Button DeleteBtn;
+        private Button RefreshLibBtn;
     }
 }

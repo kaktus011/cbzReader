@@ -4,16 +4,12 @@ using System.IO.Compression;
 
 namespace cbzReader.Forms
 {
-    //BUG(s)
-    //adding big files takes a while
-
-
     public partial class Library : Form
     {
         private readonly List<ComicBook> _books = [];
         private readonly List<PictureBox> _picBoxes = [];
 
-        private readonly string _comicExtractLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
+        internal static readonly string ComicExtractLocation = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\cbzViewerLib";
 
         internal const int PageWidth = 794;
         internal const int PageHeight = 1123;
@@ -28,6 +24,7 @@ namespace cbzReader.Forms
         public Library()
         {
             InitializeComponent();
+            RefreshLibBtn.Visible = false;
         }
 
         private void ImportBtn_Click(object? sender, EventArgs e)
@@ -37,21 +34,22 @@ namespace cbzReader.Forms
 
             if (opnFile.ShowDialog() == DialogResult.OK)
             {
-                var path = opnFile.FileName;
-                if (CheckForFileInLib(path))
+                var zipPath = opnFile.FileName;
+                if (CheckForFileInLib(zipPath))
                 {
                     MessageBox.Show("Error: File already in library. Click 'Restore' if it isn't shown");
                     return;
                 }
 
+                var comicTitle = Path.GetFileName(zipPath).Substring(0, Path.GetFileName(zipPath).IndexOf('.'));
                 var comic = new ComicBook
                 {
-                    Location = path,
-                    Title = Path.GetFileName(path).Substring(0, Path.GetFileName(path).IndexOf('.'))
+                    Title = comicTitle,
+                    Location = ComicExtractLocation + @$"\{comicTitle}",
                 };
 
                 if (_books.FirstOrDefault(book => book.Title == comic.Title) == null)
-                    Import(comic);
+                    Import(comic, zipPath);
                 else
                 {
                     MessageBox.Show("Error: File already in library.");
@@ -63,6 +61,24 @@ namespace cbzReader.Forms
         {
             ImportOnOpening();
             RestoreBtn.Visible = false;
+            RefreshLibBtn.Visible = true;
+        }
+
+        private void RefreshLibBtn_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(ComicExtractLocation))
+                return;
+
+            _books.Clear();
+
+            foreach (var picBox in _picBoxes)
+                picBox.Dispose();
+            _picBoxes.Clear();
+
+            _coverPosX = InitX;
+            _coverPosY = InitY;
+
+            ImportOnOpening();
         }
 
         private void DeleteBtn_Click(object sender, EventArgs e)
@@ -77,8 +93,8 @@ namespace cbzReader.Forms
             if (path == null || book == null)
                 return;
 
-            var picBox = _picBoxes.First(item => item.Tag == path);
-            var dir = new DirectoryInfo(Path.GetDirectoryName(path));
+            var picBox = _picBoxes.First(item => (string)item.Tag! == book.Title);
+            var dir = new DirectoryInfo(path);
 
             _picBoxes.Remove(picBox);
             _books.Remove(book);
@@ -97,7 +113,7 @@ namespace cbzReader.Forms
 
             foreach (var subDirectory in directory.GetDirectories())
             {
-                DeleteDirectory(subDirectory);
+                DeleteDirectory(subDirectory);//imported a file and it the path was user/piwki/downloads???? so it gave an error
             }
 
             directory.Delete();
@@ -107,18 +123,18 @@ namespace cbzReader.Forms
         {
             var tmpTitle = Path.GetFileNameWithoutExtension(path);
 
-            var folderPath = Path.Combine(_comicExtractLocation, tmpTitle);
+            var folderPath = Path.Combine(ComicExtractLocation, tmpTitle);
 
             return Directory.Exists(folderPath);
         }
 
-        private void Import(ComicBook comic)
+        private void Import(ComicBook comic, string zipPath)
         {
             importingLbl.Visible = true;
             importProgBar.Value = 0;
             importProgBar.Visible = true;
 
-            var imgPaths = ExtractComic(comic);
+            var imgPaths = ExtractComic(comic, zipPath);
             importProgBar.Maximum = imgPaths.Length;
             Refresh();
             comic.Pages = imgPaths.Length;
@@ -131,7 +147,7 @@ namespace cbzReader.Forms
                 Location = new Point(_coverPosX, _coverPosY),
                 BorderStyle = BorderStyle.FixedSingle,
                 Text = comic.Title,
-                Tag = (string)comic.Location
+                Tag = (string)comic.Title
             };
             newPicBox.MouseDoubleClick += (sender, e) => { Read(newPicBox.Text); };
             _picBoxes.Add(newPicBox);
@@ -143,6 +159,7 @@ namespace cbzReader.Forms
             {
                 var img = Image.FromFile(path);
                 comic.Panels.Add(ResizeImage(img, PageWidth, PageHeight));
+                img.Dispose();
                 importProgBar.PerformStep();
             }
 
@@ -155,7 +172,7 @@ namespace cbzReader.Forms
 
         private void ImportOnOpening()
         {
-            if (!Directory.Exists(_comicExtractLocation))
+            if (!Directory.Exists(ComicExtractLocation))
                 return;
 
             importingLbl.Visible = true;
@@ -163,7 +180,7 @@ namespace cbzReader.Forms
             importProgBar.Visible = true;
             Refresh();
 
-            var folderPaths = Directory.EnumerateDirectories(_comicExtractLocation).ToArray();
+            var folderPaths = Directory.EnumerateDirectories(ComicExtractLocation).ToArray();
             importProgBar.Maximum = folderPaths.Length;
             importProgBar.Step = 1;
 
@@ -188,6 +205,7 @@ namespace cbzReader.Forms
                 }
 
                 var tmp = Image.FromFile(imgPaths[0]);
+
                 var newPicBox = new PictureBox
                 {
                     Size = new Size(105, 147),
@@ -195,11 +213,11 @@ namespace cbzReader.Forms
                     Location = new Point(_coverPosX, _coverPosY),
                     BorderStyle = BorderStyle.FixedSingle,
                     Text = newComic.Title,
-                    Tag = (string)newComic.Location
+                    Tag = (string)newComic.Title
                 };
                 newPicBox.MouseDoubleClick += (sender, e) => { Read(newPicBox.Text); };
                 _picBoxes.Add(newPicBox);
-                
+
                 Controls.Add(newPicBox);
                 importProgBar.PerformStep();
                 CalculateNextCoverPos();
@@ -245,7 +263,7 @@ namespace cbzReader.Forms
                 CalculateNextCoverPos();
                 Controls.Add(picBox);
             }
-                
+
         }
 
         private Bitmap ResizeImage(Image image, int width, int height)
@@ -265,20 +283,21 @@ namespace cbzReader.Forms
             using var wrapMode = new ImageAttributes();
             wrapMode.SetWrapMode(WrapMode.TileFlipXY);
             graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+            image.Dispose();
 
             return destImage;
         }
 
-        private string[] ExtractComic(ComicBook comic)
+        private string[] ExtractComic(ComicBook comic, string zipPath)
         {
-            var dir = _comicExtractLocation + "\\" + comic.Title;
+            //var dir = ComicExtractLocation + "\\" + comic.Title;
 
             //extract to dir
-            using ZipArchive archive = ZipFile.OpenRead(comic.Location);
-            archive.ExtractToDirectory(dir);
+            using ZipArchive archive = ZipFile.OpenRead(zipPath);
+            archive.ExtractToDirectory(comic.Location);
 
             //get all the locations of every file in dir
-            var result = Directory.EnumerateFiles(dir, "*.*", SearchOption.AllDirectories).ToArray();
+            var result = Directory.EnumerateFiles(comic.Location, "*.*", SearchOption.AllDirectories).ToArray();
             Array.Sort(result);
 
             return result;
