@@ -23,7 +23,7 @@ namespace cbzReader.Forms
 
         public Library()
         {
-            InitializeComponent();z
+            InitializeComponent();
             RefreshLibBtn.Visible = false;
         }
 
